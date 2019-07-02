@@ -2,7 +2,7 @@ all: vet lint test
 
 .PHONY: deps
 deps:
-	@go get -u golang.org/x/lint/golint
+	@go get golang.org/x/lint/golint
 
 .PHONY: vet
 vet:
@@ -10,7 +10,7 @@ vet:
 	@go vet ./...
 
 .PHONY: lint
-lint:
+lint: deps
 	@echo "==== go lint ===="
 	@golint -set_exit_status ./...
 
