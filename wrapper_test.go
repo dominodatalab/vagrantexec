@@ -50,7 +50,7 @@ func TestVersion(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockVersion(ioutil.ReadFile("testdata/version.out"))
+		mockVersion(ioutil.ReadFile("testdata/version"))
 
 		version, err := w.Version()
 		assert.NoError(t, err)
