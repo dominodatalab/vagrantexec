@@ -22,6 +22,25 @@ func (m *mockRunner) Execute(cmd string, cmdargs ...string) ([]byte, error) {
 	return nil, args.Error(1)
 }
 
+func TestUp(t *testing.T) {
+	w := New()
+	mockUp := func(out []byte, err error) {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"up"}).Return(out, err)
+		w.runner = runner
+	}
+
+	t.Run("success", func(t *testing.T) {
+		mockUp([]byte("up output"), nil)
+		assert.NoError(t, w.Up())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mockUp(nil, errors.New("up failed"))
+		assert.Error(t, w.Up())
+	})
+}
+
 func TestVersion(t *testing.T) {
 	w := New()
 	mockVersion := func(resp []byte, err error) {

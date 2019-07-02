@@ -28,7 +28,16 @@ func New() Wrapper {
 	}
 }
 
-// Version returns the installed version of Vagrant. An error is returned if the command fails or the output is invalid.
+// Up creates and configures guest machines according to your Vagrantfile.
+func (w Wrapper) Up() error {
+	out, err := w.exec("up")
+	if err == nil && len(out) > 0 {
+		w.logger.Info(string(out))
+	}
+	return err
+}
+
+// Version displays the current version of Vagrant you have installed.
 func (w Wrapper) Version() (version string, err error) {
 	out, err := w.exec("version", "--machine-readable")
 	if err != nil {
