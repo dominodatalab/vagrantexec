@@ -10,24 +10,26 @@ import (
 
 const binary = "vagrant"
 
-type wrapper struct {
+// Wrapper is the default implementation of the Vagrant interface.
+type Wrapper struct {
 	executable string
 	runner     command.Runner
 	logger     log.FieldLogger
 }
 
-func New() *wrapper {
+// New creates a new Vagrant CLI wrapper.
+func New() Wrapper {
 	logger := log.New()
-	logger.Level = log.DebugLevel
 
-	return &wrapper{
+	return Wrapper{
 		executable: binary,
 		logger:     logger,
 		runner:     command.ShellRunner{},
 	}
 }
 
-func (w wrapper) Version() (version string, err error) {
+// Version returns the installed version of Vagrant. An error is returned if the command fails or the output is invalid.
+func (w Wrapper) Version() (version string, err error) {
 	out, err := w.exec("version", "--machine-readable")
 	if err != nil {
 		return
@@ -44,7 +46,7 @@ func (w wrapper) Version() (version string, err error) {
 	return data[0], err
 }
 
-func (w wrapper) exec(args ...string) ([]byte, error) {
+func (w Wrapper) exec(args ...string) ([]byte, error) {
 	fullCmd := fmt.Sprintf("%s %s", w.executable, strings.Join(args, " "))
 
 	w.logger.Debugf("Running command [%s]", fullCmd)

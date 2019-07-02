@@ -2,6 +2,7 @@ package vagrantexec
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -20,6 +21,11 @@ func parseMachineOutput(machineOut string) (entries []machineOutputEntry, err er
 	for scanner.Scan() {
 		line := scanner.Text()
 		row := strings.Split(line, ",")
+		if len(row) < 4 {
+			err = errors.New("invalid format")
+			return
+		}
+
 		entries = append(entries, machineOutputEntry{
 			timestamp: row[0],
 			target:    row[1],
