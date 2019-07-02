@@ -41,6 +41,44 @@ func TestUp(t *testing.T) {
 	})
 }
 
+func TestHalt(t *testing.T) {
+	w := New()
+	mockHalt := func(out []byte, err error) {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"halt"}).Return(out, err)
+		w.runner = runner
+	}
+
+	t.Run("success", func(t *testing.T) {
+		mockHalt([]byte("halt output"), nil)
+		assert.NoError(t, w.Halt())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mockHalt(nil, errors.New("halt failed"))
+		assert.Error(t, w.Halt())
+	})
+}
+
+func TestDestroy(t *testing.T) {
+	w := New()
+	mockDestroy := func(out []byte, err error) {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"destroy", "--force"}).Return(out, err)
+		w.runner = runner
+	}
+
+	t.Run("success", func(t *testing.T) {
+		mockDestroy([]byte("destroy output"), nil)
+		assert.NoError(t, w.Destroy())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mockDestroy(nil, errors.New("destroy failed"))
+		assert.Error(t, w.Destroy())
+	})
+}
+
 func TestVersion(t *testing.T) {
 	w := New()
 	mockVersion := func(resp []byte, err error) {

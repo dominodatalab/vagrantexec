@@ -31,8 +31,26 @@ func New() Wrapper {
 // Up creates and configures guest machines according to your Vagrantfile.
 func (w Wrapper) Up() error {
 	out, err := w.exec("up")
-	if err == nil && len(out) > 0 {
-		w.logger.Info(string(out))
+	if err == nil {
+		w.info(out)
+	}
+	return err
+}
+
+// Halt will gracefully shut down the guest operating system and power down the guest machine.
+func (w Wrapper) Halt() error {
+	out, err := w.exec("halt")
+	if err == nil {
+		w.info(out)
+	}
+	return err
+}
+
+// Destroy stops the running guest machines and destroys all of the resources created during the creation process.
+func (w Wrapper) Destroy() error {
+	out, err := w.exec("destroy", "--force")
+	if err == nil {
+		w.info(out)
 	}
 	return err
 }
@@ -63,4 +81,10 @@ func (w Wrapper) exec(args ...string) ([]byte, error) {
 	w.logger.Debugf("Command output [%s]: %s", fullCmd, bs)
 
 	return bs, err
+}
+
+func (w Wrapper) info(out []byte) {
+	if len(out) > 0 {
+		w.logger.Info(string(out))
+	}
 }
