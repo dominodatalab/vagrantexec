@@ -7,6 +7,42 @@ import (
 	"strings"
 )
 
+const (
+	// Unknown represents any unhandled state.
+	Unknown MachineState = iota
+	// Aborted means the VM was abruptly stopped without properly closing the session.
+	Aborted
+	// GuruMeditation means that an internal error in VirtualBox caused the VM to fail.
+	GuruMeditation
+	// Inaccessible means that VirtualBox can't find your VM configuration.
+	Inaccessible
+	// NotCreated means the VM has not been created.
+	NotCreated
+	// Paused means the VM may have been paused by VirtualBox.
+	Paused
+	// PowerOff means the VM has been turned off.
+	PowerOff
+	// Stopping means the VM is in the process of stopping.
+	Stopping
+	// Running means the VM is up and running.
+	Running
+	// Saving means the VM is currently saving its state.
+	Saving
+	// Saved means the VM has been suspended.
+	Saved
+	// Stuck means that VirtualBox is unable to recover the current state of the VM.
+	Stuck
+)
+
+// MachineState represents the state of a machine Vagrant is managing.
+type MachineState int
+
+func (s MachineState) String() string {
+	return []string{
+		"Unknown", "Aborted", "GuruMeditation", "Inaccessible", "NotCreated",
+		"Paused", "PowerOff", "Stopping", "Running", "Saving", "Saved", "Stuck"}[s]
+}
+
 // machineOutputEntry defines all of the components in a single line of machine-readable output.
 type machineOutputEntry struct {
 	timestamp string
