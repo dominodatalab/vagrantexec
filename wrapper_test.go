@@ -201,3 +201,42 @@ func TestSSH(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestPluginList(t *testing.T) {
+	mockPluginList := func(resp []byte, err error) Wrapper {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"plugin", "list", "--machine-readable"}).Return(resp, err)
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
+	}
+
+	t.Run("success", func(t *testing.T) {
+		w := mockPluginList(ioutil.ReadFile("testdata/plugin-list"))
+
+		actual, err := w.PluginList()
+		require.NoError(t, err)
+
+		expected := []Plugin{
+			{
+				Name:     "vagrant-disksize",
+				Version:  "0.1.3",
+				Location: "global",
+			},
+			{
+				Name:     "vagrant-ip-show",
+				Version:  "0.0.4",
+				Location: "global",
+			},
+		}
+		assert.EqualValues(t, expected, actual)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		w := mockPluginList(nil, errors.New("runner error"))
+
+		_, err := w.PluginList()
+		assert.Error(t, err)
+	})
+}

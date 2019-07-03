@@ -2,6 +2,7 @@ package vagrantexec
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/dominodatalab/vagrant-exec/command"
@@ -18,6 +19,15 @@ type Interface interface {
 	Status() ([]MachineStatus, error)
 	Version() (string, error)
 	SSH(string) (string, error)
+
+	PluginList() ([]Plugin, error)
+}
+
+// Plugin encapsulates Vagrant plugin metadata.
+type Plugin struct {
+	Name     string
+	Version  string
+	Location string
 }
 
 // Wrapper is the default implementation of the Vagrant Interface.
@@ -125,6 +135,30 @@ func (w Wrapper) Version() (version string, err error) {
 func (w Wrapper) SSH(command string) (string, error) {
 	out, err := w.exec("ssh", "--no-tty", "--command", command)
 	return string(out), err
+}
+
+// PluginList returns a list of all installed plugins, their versions and install locations.
+func (w Wrapper) PluginList() (plugins []Plugin, err error) {
+	out, err := w.exec("plugin", "list", "--machine-readable")
+	if err != nil {
+		return
+	}
+	pluginInfo, err := parseMachineReadable(out)
+	if err != nil {
+		return
+	}
+	pluginMetadataExtractor := regexp.MustCompile(`^([\w-]+)\s\((.*)%!\(VAGRANT_COMMA\)\s([a-z]+)\)$`)
+	for _, entry := range pluginInfo {
+		if entry.mType == "ui" {
+			matches := pluginMetadataExtractor.FindAllStringSubmatch(entry.data[1], -1)[0][1:]
+			plugins = append(plugins, Plugin{
+				Name:     matches[0],
+				Version:  matches[1],
+				Location: matches[2],
+			})
+		}
+	}
+	return
 }
 
 // exec dispatches vagrant commands via the shell runner.
