@@ -173,3 +173,31 @@ func TestVersion(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestSSH(t *testing.T) {
+	sshCmd := "my-command 1 2 3"
+
+	mockSSH := func(resp []byte, err error) Wrapper {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"ssh", "--no-tty", "--command", sshCmd}).Return(resp, err)
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
+	}
+
+	t.Run("success", func(t *testing.T) {
+		w := mockSSH([]byte("command output"), nil)
+
+		output, err := w.SSH(sshCmd)
+		assert.NoError(t, err)
+		assert.Equal(t, "command output", output)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		w := mockSSH(nil, errors.New("runner error"))
+
+		_, err := w.SSH(sshCmd)
+		assert.Error(t, err)
+	})
+}

@@ -10,7 +10,17 @@ import (
 
 const binary = "vagrant"
 
-// Wrapper is the default implementation of the Vagrant interface.
+// Interface defines the supported Vagrant commands.
+type Interface interface {
+	Up() error
+	Halt() error
+	Destroy() error
+	Status() ([]MachineStatus, error)
+	Version() (string, error)
+	SSH(string) (string, error)
+}
+
+// Wrapper is the default implementation of the Vagrant Interface.
 type Wrapper struct {
 	executable string
 	runner     command.Runner
@@ -61,7 +71,7 @@ func (w Wrapper) Status() (statuses []MachineStatus, err error) {
 	if err != nil {
 		return
 	}
-	machineInfo, err := parseMachineReadable(string(out))
+	machineInfo, err := parseMachineReadable(out)
 	if err != nil {
 		return
 	}
@@ -99,7 +109,7 @@ func (w Wrapper) Version() (version string, err error) {
 	if err != nil {
 		return
 	}
-	vInfo, err := parseMachineReadable(string(out))
+	vInfo, err := parseMachineReadable(out)
 	if err != nil {
 		return
 	}
@@ -109,6 +119,12 @@ func (w Wrapper) Version() (version string, err error) {
 	}
 
 	return data[0], err
+}
+
+// SSH executes a command on a Vagrant machine via SSH and returns the stdout/stderr output.
+func (w Wrapper) SSH(command string) (string, error) {
+	out, err := w.exec("ssh", "--no-tty", "--command", command)
+	return string(out), err
 }
 
 // exec dispatches vagrant commands via the shell runner.

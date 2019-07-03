@@ -34,9 +34,10 @@ const (
 	Stuck
 )
 
-// MachineState represents the state of a machine Vagrant is managing.
+// MachineState denotes the state of a machine Vagrant is managing.
 type MachineState int
 
+// String returns a string representation of the MachineState.
 func (s MachineState) String() string {
 	return []string{
 		"Unknown", "Aborted", "GuruMeditation", "Inaccessible", "NotCreated",
@@ -73,7 +74,7 @@ func ToMachineState(str string) MachineState {
 	}
 }
 
-// MachineStatus defines metadata that describes a single Vagrant machine.
+// MachineStatus encompasses the machine metadata provided by Vagrant.
 type MachineStatus struct {
 	Name     string
 	Provider string
@@ -89,8 +90,8 @@ type machineOutputEntry struct {
 }
 
 // parseMachineReadable converts machine-readable output into a slice of machineOutputEntry.
-func parseMachineReadable(machineOut string) (entries []machineOutputEntry, err error) {
-	scanner := bufio.NewScanner(strings.NewReader(machineOut))
+func parseMachineReadable(machineOut []byte) (entries []machineOutputEntry, err error) {
+	scanner := bufio.NewScanner(strings.NewReader(string(machineOut)))
 	for scanner.Scan() {
 		line := scanner.Text()
 		row := strings.Split(line, ",")
