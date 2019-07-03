@@ -1,0 +1,11 @@
+1562175813,srv-1,metadata,provider,virtualbox
+1562175814,srv-2,metadata,provider,virtualbox
+1562175814,srv-1,provider-name,virtualbox
+1562175814,srv-1,state,running
+1562175814,srv-1,state-human-short,running
+1562175814,srv-1,state-human-long,The VM is running. To stop this VM%!(VAGRANT_COMMA) you can run `vagrant halt` to\nshut it down forcefully%!(VAGRANT_COMMA) or you can run `vagrant suspend` to simply\nsuspend the virtual machine. In either case%!(VAGRANT_COMMA) to restart it again%!(VAGRANT_COMMA)\nsimply run `vagrant up`.
+1562175814,srv-2,provider-name,virtualbox
+1562175814,srv-2,state,poweroff
+1562175814,srv-2,state-human-short,poweroff
+1562175814,srv-2,state-human-long,The VM is powered off. To restart the VM%!(VAGRANT_COMMA) simply run `vagrant up`
+1562175814,,ui,info,Current machine states:\n\nsrv-1                     running (virtualbox)\nsrv-2                     poweroff (virtualbox)\n\nThis environment represents multiple VMs. The VMs are all listed\nabove with their current state. For more information about a specific\nVM%!(VAGRANT_COMMA) run `vagrant status NAME`.

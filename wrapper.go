@@ -55,17 +55,55 @@ func (w Wrapper) Destroy() error {
 	return err
 }
 
+// Status reports the status of the machines Vagrant is managing.
+func (w Wrapper) Status() (statuses []MachineStatus, err error) {
+	out, err := w.exec("status", "--machine-readable")
+	if err != nil {
+		return
+	}
+	machineInfo, err := parseMachineReadable(string(out))
+	if err != nil {
+		return
+	}
+
+	statusMap := map[string]*MachineStatus{}
+	for _, entry := range machineInfo {
+		if len(entry.target) == 0 {
+			continue // skip when no target specified
+		}
+
+		var status *MachineStatus // fetch status or create when missing
+		status, ok := statusMap[entry.target]
+		if !ok {
+			status = &MachineStatus{Name: entry.target}
+			statusMap[entry.target] = status
+		}
+
+		switch entry.mType { // populate status fields
+		case "provider-name":
+			status.Provider = entry.data[0]
+		case "state":
+			status.State = ToMachineState(entry.data[0])
+		}
+	}
+
+	for _, st := range statusMap {
+		statuses = append(statuses, *st)
+	}
+	return statuses, nil
+}
+
 // Version displays the current version of Vagrant you have installed.
 func (w Wrapper) Version() (version string, err error) {
 	out, err := w.exec("version", "--machine-readable")
 	if err != nil {
 		return
 	}
-	entries, err := parseMachineOutput(string(out))
+	vInfo, err := parseMachineReadable(string(out))
 	if err != nil {
 		return
 	}
-	data, err := pluckEntryData(entries, "version-installed")
+	data, err := pluckEntryData(vInfo, "version-installed")
 	if err != nil {
 		return
 	}
@@ -73,6 +111,7 @@ func (w Wrapper) Version() (version string, err error) {
 	return data[0], err
 }
 
+// exec dispatches vagrant commands via the shell runner.
 func (w Wrapper) exec(args ...string) ([]byte, error) {
 	fullCmd := fmt.Sprintf("%s %s", w.executable, strings.Join(args, " "))
 
@@ -83,6 +122,7 @@ func (w Wrapper) exec(args ...string) ([]byte, error) {
 	return bs, err
 }
 
+// info will log non-empty input.
 func (w Wrapper) info(out []byte) {
 	if len(out) > 0 {
 		w.logger.Info(string(out))

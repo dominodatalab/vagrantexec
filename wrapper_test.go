@@ -23,72 +23,135 @@ func (m *mockRunner) Execute(cmd string, cmdargs ...string) ([]byte, error) {
 }
 
 func TestUp(t *testing.T) {
-	w := New()
-	mockUp := func(out []byte, err error) {
+	mockUp := func(out []byte, err error) Wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"up"}).Return(out, err)
-		w.runner = runner
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockUp([]byte("up output"), nil)
+		w := mockUp([]byte("up output"), nil)
 		assert.NoError(t, w.Up())
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockUp(nil, errors.New("up failed"))
+		w := mockUp(nil, errors.New("up failed"))
 		assert.Error(t, w.Up())
 	})
 }
 
 func TestHalt(t *testing.T) {
-	w := New()
-	mockHalt := func(out []byte, err error) {
+	mockHalt := func(out []byte, err error) Wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"halt"}).Return(out, err)
-		w.runner = runner
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockHalt([]byte("halt output"), nil)
+		w := mockHalt([]byte("halt output"), nil)
 		assert.NoError(t, w.Halt())
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockHalt(nil, errors.New("halt failed"))
+		w := mockHalt(nil, errors.New("halt failed"))
 		assert.Error(t, w.Halt())
 	})
 }
 
 func TestDestroy(t *testing.T) {
-	w := New()
-	mockDestroy := func(out []byte, err error) {
+	mockDestroy := func(out []byte, err error) Wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"destroy", "--force"}).Return(out, err)
-		w.runner = runner
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockDestroy([]byte("destroy output"), nil)
+		w := mockDestroy([]byte("destroy output"), nil)
 		assert.NoError(t, w.Destroy())
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockDestroy(nil, errors.New("destroy failed"))
+		w := mockDestroy(nil, errors.New("destroy failed"))
 		assert.Error(t, w.Destroy())
 	})
 }
 
+func TestStatus(t *testing.T) {
+	mockStatus := func(out []byte, err error) Wrapper {
+		runner := new(mockRunner)
+		runner.On("Execute", "vagrant", []string{"status", "--machine-readable"}).Return(out, err)
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
+	}
+
+	t.Run("one_machine", func(t *testing.T) {
+		w := mockStatus(ioutil.ReadFile("testdata/status-single"))
+
+		statuses, err := w.Status()
+		require.NoError(t, err)
+
+		expected := []MachineStatus{
+			{
+				Name:     "srv-1",
+				Provider: "virtualbox",
+				State:    NotCreated,
+			},
+		}
+		assert.EqualValues(t, expected, statuses)
+	})
+
+	t.Run("multi_machine", func(t *testing.T) {
+		w := mockStatus(ioutil.ReadFile("testdata/status-multiple"))
+
+		statuses, err := w.Status()
+		require.NoError(t, err)
+
+		expected := []MachineStatus{
+			{
+				Name:     "srv-1",
+				Provider: "virtualbox",
+				State:    Running,
+			},
+			{
+				Name:     "srv-2",
+				Provider: "virtualbox",
+				State:    PowerOff,
+			},
+		}
+		assert.EqualValues(t, expected, statuses)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		w := mockStatus(nil, errors.New("runner error"))
+
+		_, err := w.Status()
+		assert.Error(t, err)
+	})
+}
+
 func TestVersion(t *testing.T) {
-	w := New()
-	mockVersion := func(resp []byte, err error) {
+	mockVersion := func(resp []byte, err error) Wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"version", "--machine-readable"}).Return(resp, err)
-		w.runner = runner
+
+		wrapper := New()
+		wrapper.runner = runner
+		return wrapper
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockVersion(ioutil.ReadFile("testdata/version"))
+		w := mockVersion(ioutil.ReadFile("testdata/version"))
 
 		version, err := w.Version()
 		assert.NoError(t, err)
@@ -96,7 +159,7 @@ func TestVersion(t *testing.T) {
 	})
 
 	t.Run("bad_output", func(t *testing.T) {
-		mockVersion([]byte("bad output"), nil)
+		w := mockVersion([]byte("bad output"), nil)
 
 		_, err := w.Version()
 		require.Error(t, err)
@@ -104,7 +167,7 @@ func TestVersion(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockVersion(nil, errors.New("something went wrong"))
+		w := mockVersion(nil, errors.New("something went wrong"))
 
 		_, err := w.Version()
 		assert.Error(t, err)

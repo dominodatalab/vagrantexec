@@ -43,6 +43,43 @@ func (s MachineState) String() string {
 		"Paused", "PowerOff", "Stopping", "Running", "Saving", "Saved", "Stuck"}[s]
 }
 
+// ToMachineState converts a string into a MachineState. An Unknown state is returned if the string is invalid.
+func ToMachineState(str string) MachineState {
+	switch str {
+	case "running":
+		return Running
+	case "not_created":
+		return NotCreated
+	case "saved":
+		return Saved
+	case "poweroff":
+		return PowerOff
+	case "aborted":
+		return Aborted
+	case "paused":
+		return Paused
+	case "stopping":
+		return Stopping
+	case "saving":
+		return Saving
+	case "stuck":
+		return Stuck
+	case "inaccessible":
+		return Inaccessible
+	case "gurumeditation":
+		return GuruMeditation
+	default:
+		return Unknown
+	}
+}
+
+// MachineStatus defines metadata that describes a single Vagrant machine.
+type MachineStatus struct {
+	Name     string
+	Provider string
+	State    MachineState
+}
+
 // machineOutputEntry defines all of the components in a single line of machine-readable output.
 type machineOutputEntry struct {
 	timestamp string
@@ -51,8 +88,8 @@ type machineOutputEntry struct {
 	data      []string
 }
 
-// parseMachineOutput converts machine-readable output into a slice of entries.
-func parseMachineOutput(machineOut string) (entries []machineOutputEntry, err error) {
+// parseMachineReadable converts machine-readable output into a slice of machineOutputEntry.
+func parseMachineReadable(machineOut string) (entries []machineOutputEntry, err error) {
 	scanner := bufio.NewScanner(strings.NewReader(machineOut))
 	for scanner.Scan() {
 		line := scanner.Text()
