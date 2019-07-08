@@ -52,29 +52,17 @@ func New() Vagrant {
 
 // Up creates and configures guest machines according to your Vagrantfile.
 func (w wrapper) Up() error {
-	out, err := w.exec("up")
-	if err == nil {
-		w.info(out)
-	}
-	return err
+	return w.execLogOutput("up")
 }
 
 // Halt will gracefully shut down the guest operating system and power down the guest machine.
 func (w wrapper) Halt() error {
-	out, err := w.exec("halt")
-	if err == nil {
-		w.info(out)
-	}
-	return err
+	return w.execLogOutput("halt")
 }
 
 // Destroy stops the running guest machines and destroys all of the resources created during the creation process.
 func (w wrapper) Destroy() error {
-	out, err := w.exec("destroy", "--force")
-	if err == nil {
-		w.info(out)
-	}
-	return err
+	return w.execLogOutput("destroy", "--force")
 }
 
 // Status reports the status of the machines Vagrant is managing.
@@ -177,27 +165,25 @@ func (w wrapper) PluginInstall(plugin Plugin) error {
 		cmdArgs = append(cmdArgs, "--local")
 	}
 
-	out, err := w.exec(cmdArgs...)
-	if err == nil {
-		w.info(out)
-	}
-	return err
+	return w.execLogOutput(cmdArgs...)
 }
 
 // exec dispatches vagrant commands via the shell runner.
 func (w wrapper) exec(args ...string) ([]byte, error) {
 	fullCmd := fmt.Sprintf("%s %s", w.executable, strings.Join(args, " "))
 
-	w.logger.Infof("Running command [%s]", fullCmd)
+	w.logger.Debugf("Running command [%s]", fullCmd)
 	bs, err := w.runner.Execute(w.executable, args...)
 	w.logger.Debugf("Command output [%s]: %s", fullCmd, bs)
 
 	return bs, err
 }
 
-// info will log non-empty input.
-func (w wrapper) info(input []byte) {
-	if len(input) > 0 {
-		w.logger.Info(string(input))
+// execLogOutput logs the output of the command at an info level instead of returning it.
+func (w wrapper) execLogOutput(args ...string) error {
+	out, err := w.exec(args...)
+	if len(out) > 0 {
+		w.logger.Info(string(out))
 	}
+	return err
 }
