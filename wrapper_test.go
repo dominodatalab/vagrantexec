@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/dominodatalab/vagrant-exec/command"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -22,14 +24,22 @@ func (m *mockRunner) Execute(cmd string, cmdargs ...string) ([]byte, error) {
 	return nil, args.Error(1)
 }
 
+func newTestWrapper(runner command.Runner) wrapper {
+	logger := logrus.New()
+	logger.Out = ioutil.Discard
+
+	return wrapper{
+		executable: binary,
+		logger:     logger,
+		runner:     runner,
+	}
+}
+
 func TestUp(t *testing.T) {
-	mockUp := func(out []byte, err error) Wrapper {
+	mockUp := func(out []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"up"}).Return(out, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -44,13 +54,10 @@ func TestUp(t *testing.T) {
 }
 
 func TestHalt(t *testing.T) {
-	mockHalt := func(out []byte, err error) Wrapper {
+	mockHalt := func(out []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"halt"}).Return(out, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -65,13 +72,10 @@ func TestHalt(t *testing.T) {
 }
 
 func TestDestroy(t *testing.T) {
-	mockDestroy := func(out []byte, err error) Wrapper {
+	mockDestroy := func(out []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"destroy", "--force"}).Return(out, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -86,13 +90,10 @@ func TestDestroy(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	mockStatus := func(out []byte, err error) Wrapper {
+	mockStatus := func(out []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"status", "--machine-readable"}).Return(out, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("one_machine", func(t *testing.T) {
@@ -141,13 +142,10 @@ func TestStatus(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	mockVersion := func(resp []byte, err error) Wrapper {
+	mockVersion := func(resp []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"version", "--machine-readable"}).Return(resp, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -177,13 +175,10 @@ func TestVersion(t *testing.T) {
 func TestSSH(t *testing.T) {
 	sshCmd := "my-command 1 2 3"
 
-	mockSSH := func(resp []byte, err error) Wrapper {
+	mockSSH := func(resp []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"ssh", "--no-tty", "--command", sshCmd}).Return(resp, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -203,13 +198,10 @@ func TestSSH(t *testing.T) {
 }
 
 func TestPluginList(t *testing.T) {
-	mockPluginList := func(resp []byte, err error) Wrapper {
+	mockPluginList := func(resp []byte, err error) wrapper {
 		runner := new(mockRunner)
 		runner.On("Execute", "vagrant", []string{"plugin", "list", "--machine-readable"}).Return(resp, err)
-
-		wrapper := New()
-		wrapper.runner = runner
-		return wrapper
+		return newTestWrapper(runner)
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -239,4 +231,8 @@ func TestPluginList(t *testing.T) {
 		_, err := w.PluginList()
 		assert.Error(t, err)
 	})
+}
+
+func TestPluginInstall(t *testing.T) {
+	// default
 }
