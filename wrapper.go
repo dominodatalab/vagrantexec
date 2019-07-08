@@ -196,8 +196,8 @@ func (w wrapper) exec(args ...string) ([]byte, error) {
 }
 
 // info will log non-empty input.
-func (w wrapper) info(out []byte) {
-	if len(out) > 0 {
-		w.logger.Info(string(out))
+func (w wrapper) info(input []byte) {
+	if len(input) > 0 {
+		w.logger.Info(string(input))
 	}
 }

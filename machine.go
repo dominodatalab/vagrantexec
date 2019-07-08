@@ -35,6 +35,8 @@ const (
 )
 
 // MachineState denotes the state of a machine Vagrant is managing.
+//
+// https://github.com/hashicorp/vagrant/blob/4ce8d84f7e6709e4478612a9f0810dc686076ee0/templates/locales/en.yml#L2056 contains the list of all available states.
 type MachineState int
 
 // String returns a string representation of the MachineState.
@@ -82,6 +84,8 @@ type MachineStatus struct {
 }
 
 // machineOutputEntry defines all of the components in a single line of machine-readable output.
+//
+// See https://www.vagrantup.com/docs/cli/machine-readable.html#format for more details.
 type machineOutputEntry struct {
 	timestamp string
 	target    string
