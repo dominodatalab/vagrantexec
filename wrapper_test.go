@@ -130,7 +130,7 @@ func TestStatus(t *testing.T) {
 				State:    PowerOff,
 			},
 		}
-		assert.EqualValues(t, expected, statuses)
+		assert.ElementsMatch(t, expected, statuses)
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -234,5 +234,10 @@ func TestPluginList(t *testing.T) {
 }
 
 func TestPluginInstall(t *testing.T) {
-	// default
+	//mockPluginList := func(resp []byte, err error) {}
+
+	// no name
+	// version
+	// local
+	// error
 }
