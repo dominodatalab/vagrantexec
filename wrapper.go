@@ -39,14 +39,19 @@ type wrapper struct {
 	logger     log.FieldLogger
 }
 
-// New creates a new Vagrant CLI wrapper.
-func New() Vagrant {
-	logger := log.New()
+// New creates a new Vagrant CLI wrapper targeting a directory where a Vagrantfile should exist.
+func New(vagrantfileDir string) Vagrant {
+	if len(vagrantfileDir) == 0 {
+		panic("vagrantfile dir cannot be empty")
+	}
+	runner := command.ShellRunner{
+		Dir: vagrantfileDir,
+	}
 
 	return wrapper{
 		executable: binary,
-		logger:     logger,
-		runner:     command.ShellRunner{},
+		logger:     log.New(),
+		runner:     runner,
 	}
 }
 

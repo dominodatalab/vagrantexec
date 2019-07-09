@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/dominodatalab/vagrant-exec/command"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -39,6 +40,22 @@ func mockedWrapperFn(runnerArgs []string) func([]byte, error) wrapper {
 			runner:     runner,
 		}
 	}
+}
+
+func TestNew(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		w := New("/my/path").(wrapper)
+		assert.Equal(t, "vagrant", w.executable)
+
+		r := w.runner.(command.ShellRunner)
+		assert.Equal(t, "/my/path", r.Dir)
+	})
+
+	t.Run("empty_vagrantfile_dir", func(t *testing.T) {
+		assert.PanicsWithValue(t, "vagrantfile dir cannot be empty", func() {
+			New("")
+		})
+	})
 }
 
 func TestUp(t *testing.T) {
