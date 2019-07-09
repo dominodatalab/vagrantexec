@@ -99,7 +99,7 @@ func parseMachineReadable(machineOut []byte) (entries []machineOutputEntry, err 
 		line := scanner.Text()
 		row := strings.Split(line, ",")
 		if len(row) < 4 {
-			err = fmt.Errorf("invalid machine-readable format: %q", row)
+			err = fmt.Errorf("invalid machine-readable format: %s", row)
 			return
 		}
 

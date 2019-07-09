@@ -147,7 +147,7 @@ func TestVersion(t *testing.T) {
 
 		_, err := w.Version()
 		require.Error(t, err)
-		assert.Equal(t, "invalid format", err.Error())
+		assert.Equal(t, `invalid machine-readable format: [bad output]`, err.Error())
 	})
 
 	t.Run("error", func(t *testing.T) {
