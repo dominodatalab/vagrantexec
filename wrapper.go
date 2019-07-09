@@ -57,16 +57,19 @@ func New(vagrantfileDir string) Vagrant {
 
 // Up creates and configures guest machines according to your Vagrantfile.
 func (w wrapper) Up() error {
+	w.logger.Info("Starting vagrant environment")
 	return w.execLogOutput("up")
 }
 
 // Halt will gracefully shut down the guest operating system and power down the guest machine.
 func (w wrapper) Halt() error {
+	w.logger.Info("Stopping vagrant machines")
 	return w.execLogOutput("halt")
 }
 
 // Destroy stops the running guest machines and destroys all of the resources created during the creation process.
 func (w wrapper) Destroy() error {
+	w.logger.Info("Deleting vagrant machines")
 	return w.execLogOutput("destroy", "--force")
 }
 
@@ -170,6 +173,7 @@ func (w wrapper) PluginInstall(plugin Plugin) error {
 		cmdArgs = append(cmdArgs, "--local")
 	}
 
+	w.logger.Infof("Installing vagrant plugin: %s", plugin.Name)
 	return w.execLogOutput(cmdArgs...)
 }
 
