@@ -2,7 +2,6 @@ package vagrantexec
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -100,7 +99,7 @@ func parseMachineReadable(machineOut []byte) (entries []machineOutputEntry, err 
 		line := scanner.Text()
 		row := strings.Split(line, ",")
 		if len(row) < 4 {
-			err = errors.New("invalid format")
+			err = fmt.Errorf("invalid machine-readable format: %q", row)
 			return
 		}
 
