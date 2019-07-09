@@ -35,7 +35,7 @@ const (
 
 // MachineState denotes the state of a machine Vagrant is managing.
 //
-// https://github.com/hashicorp/vagrant/blob/4ce8d84f7e6709e4478612a9f0810dc686076ee0/templates/locales/en.yml#L2056 contains the list of all available states.
+// A list of all available states can be found here: https://github.com/hashicorp/vagrant/blob/4ce8d84f7e6709e4478612a9f0810dc686076ee0/templates/locales/en.yml#L2056
 type MachineState int
 
 // String returns a string representation of the MachineState.

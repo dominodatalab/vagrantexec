@@ -43,17 +43,28 @@ func mockedWrapperFn(runnerArgs []string) func([]byte, error) wrapper {
 }
 
 func TestNew(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		w := New("/my/path").(wrapper)
-		assert.Equal(t, "vagrant", w.executable)
+	w := New(".", false).(wrapper)
+	assert.Equal(t, "vagrant", w.executable)
 
-		r := w.runner.(command.ShellRunner)
-		assert.Equal(t, "/my/path", r.Dir)
+	t.Run("runner", func(t *testing.T) {
+		r := New("/some/path", false).(wrapper).runner.(command.ShellRunner)
+		assert.Equal(t, "/some/path", r.Dir)
+	})
+
+	t.Run("logger", func(t *testing.T) {
+		testcases := map[bool]logrus.Level{
+			false: logrus.InfoLevel,
+			true:  logrus.DebugLevel,
+		}
+		for debugArg, level := range testcases {
+			l := New(".", debugArg).(wrapper).logger.(*logrus.Logger)
+			assert.Equal(t, level, l.Level, "expected %s, got %s", level, l.Level)
+		}
 	})
 
 	t.Run("empty_vagrantfile_dir", func(t *testing.T) {
 		assert.PanicsWithValue(t, "vagrantfile dir cannot be empty", func() {
-			New("")
+			New("", false)
 		})
 	})
 }

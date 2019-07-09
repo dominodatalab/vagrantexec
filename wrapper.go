@@ -1,3 +1,4 @@
+// Package vagrantexec defines the types required to interface with the vagrant executable.
 package vagrantexec
 
 import (
@@ -40,7 +41,7 @@ type wrapper struct {
 }
 
 // New creates a new Vagrant CLI wrapper targeting a directory where a Vagrantfile should exist.
-func New(vagrantfileDir string) Vagrant {
+func New(vagrantfileDir string, debug bool) Vagrant {
 	if len(vagrantfileDir) == 0 {
 		panic("vagrantfile dir cannot be empty")
 	}
@@ -48,9 +49,14 @@ func New(vagrantfileDir string) Vagrant {
 		Dir: vagrantfileDir,
 	}
 
+	logger := log.New()
+	if debug {
+		logger.SetLevel(log.DebugLevel)
+	}
+
 	return wrapper{
 		executable: binary,
-		logger:     log.New(),
+		logger:     logger,
 		runner:     runner,
 	}
 }
