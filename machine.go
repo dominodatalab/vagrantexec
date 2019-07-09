@@ -33,6 +33,29 @@ const (
 	Stuck
 )
 
+var (
+	// stateStrList contains a list of state string representations based on the ordinal values of the constants.
+	stateStrList = []string{
+		"Unknown", "Aborted", "GuruMeditation", "Inaccessible", "NotCreated",
+		"Paused", "PowerOff", "Stopping", "Running", "Saving", "Saved", "Stuck",
+	}
+
+	// strStateMap maps vagrant state output to their corresponding constants.
+	strStateMap = map[string]MachineState{
+		"running":        Running,
+		"not_created":    NotCreated,
+		"saved":          Saved,
+		"poweroff":       PowerOff,
+		"aborted":        Aborted,
+		"paused":         Paused,
+		"stopping":       Stopping,
+		"saving":         Saving,
+		"stuck":          Stuck,
+		"inaccessible":   Inaccessible,
+		"gurumeditation": GuruMeditation,
+	}
+)
+
 // MachineState denotes the state of a machine Vagrant is managing.
 //
 // A list of all available states can be found here: https://github.com/hashicorp/vagrant/blob/4ce8d84f7e6709e4478612a9f0810dc686076ee0/templates/locales/en.yml#L2056
@@ -40,39 +63,12 @@ type MachineState int
 
 // String returns a string representation of the MachineState.
 func (s MachineState) String() string {
-	return []string{
-		"Unknown", "Aborted", "GuruMeditation", "Inaccessible", "NotCreated",
-		"Paused", "PowerOff", "Stopping", "Running", "Saving", "Saved", "Stuck"}[s]
+	return stateStrList[s]
 }
 
 // ToMachineState converts a string into a MachineState. An Unknown state is returned if the string is invalid.
 func ToMachineState(str string) MachineState {
-	switch str {
-	case "running":
-		return Running
-	case "not_created":
-		return NotCreated
-	case "saved":
-		return Saved
-	case "poweroff":
-		return PowerOff
-	case "aborted":
-		return Aborted
-	case "paused":
-		return Paused
-	case "stopping":
-		return Stopping
-	case "saving":
-		return Saving
-	case "stuck":
-		return Stuck
-	case "inaccessible":
-		return Inaccessible
-	case "gurumeditation":
-		return GuruMeditation
-	default:
-		return Unknown
-	}
+	return strStateMap[str]
 }
 
 // MachineStatus encompasses the machine metadata provided by Vagrant.
