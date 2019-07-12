@@ -13,14 +13,14 @@ import (
 
 const binary = "vagrant"
 
-// Vagrant defines the interface for executing Vagrant commands
+// Vagrant defines the interface for executing Vagrant commands.
 type Vagrant interface {
 	Up() error
 	Halt() error
 	Destroy() error
 	Status() ([]MachineStatus, error)
 	Version() (string, error)
-	SSH(string) (string, error)
+	SSH(string, string) (string, error)
 
 	PluginList() ([]Plugin, error)
 	PluginInstall(Plugin) error
@@ -136,8 +136,14 @@ func (w wrapper) Version() (version string, err error) {
 }
 
 // SSH executes a command on a Vagrant machine via SSH and returns the stdout/stderr output.
-func (w wrapper) SSH(command string) (string, error) {
-	out, err := w.exec("ssh", "--no-tty", "--command", command)
+// You can use an empty string as the nameOrID if you only have one VM defined in your Vagrantfile.
+func (w wrapper) SSH(nameOrID, command string) (string, error) {
+	cmdArgs := []string{"ssh", "--no-tty", "--command", command}
+	if len(nameOrID) > 0 {
+		cmdArgs = append(cmdArgs, nameOrID)
+	}
+
+	out, err := w.exec(cmdArgs...)
 	return string(out), err
 }
 
