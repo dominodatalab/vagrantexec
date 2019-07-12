@@ -209,7 +209,7 @@ func TestSSH(t *testing.T) {
 func TestPluginList(t *testing.T) {
 	mockPluginList := mockedWrapperFn([]string{"plugin", "list", "--machine-readable"})
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("with_plugins", func(t *testing.T) {
 		w := mockPluginList(ioutil.ReadFile("testdata/plugin-list"))
 
 		actual, err := w.PluginList()
@@ -228,6 +228,14 @@ func TestPluginList(t *testing.T) {
 			},
 		}
 		assert.EqualValues(t, expected, actual)
+	})
+
+	t.Run("no_plugins", func(t *testing.T) {
+		w := mockPluginList(ioutil.ReadFile("testdata/plugin-list-none"))
+
+		actual, err := w.PluginList()
+		require.NoError(t, err)
+		assert.Empty(t, actual)
 	})
 
 	t.Run("error", func(t *testing.T) {
