@@ -153,17 +153,20 @@ func (w wrapper) PluginList() (plugins []Plugin, err error) {
 	}
 	pluginMetadataExtractor := regexp.MustCompile(`^([\w-]+)\s\((.*)%!\(VAGRANT_COMMA\)\s([a-z]+)\)$`)
 	for _, entry := range pluginInfo {
-		if entry.mType == "ui" { // "ui" type contains combined name/version data
+		if entry.mType == "ui" { // "ui" type may contain combined name/version data
 			combinedData := entry.data[1]
 			if strings.Contains(combinedData, "No plugins installed") {
 				break
 			}
-			matches := pluginMetadataExtractor.FindAllStringSubmatch(combinedData, -1)[0][1:]
-			plugins = append(plugins, Plugin{
-				Name:     matches[0],
-				Version:  matches[1],
-				Location: matches[2],
-			})
+
+			if ms := pluginMetadataExtractor.FindAllStringSubmatch(combinedData, -1); ms != nil {
+				matches := ms[0][1:] // lens into captures
+				plugins = append(plugins, Plugin{
+					Name:     matches[0],
+					Version:  matches[1],
+					Location: matches[2],
+				})
+			}
 		}
 	}
 	return
