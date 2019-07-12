@@ -193,7 +193,16 @@ func TestSSH(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		w := mockSSH([]byte("command output"), nil)
 
-		output, err := w.SSH(sshCmd)
+		output, err := w.SSH("", sshCmd)
+		assert.NoError(t, err)
+		assert.Equal(t, "command output", output)
+	})
+
+	t.Run("specific_name", func(t *testing.T) {
+		mockSSH := mockedWrapperFn([]string{"ssh", "--no-tty", "--command", sshCmd, "my-target"})
+		wrapper := mockSSH([]byte("command output"), nil)
+
+		output, err := wrapper.SSH("my-target", sshCmd)
 		assert.NoError(t, err)
 		assert.Equal(t, "command output", output)
 	})
@@ -201,7 +210,7 @@ func TestSSH(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		w := mockSSH(nil, errors.New("runner error"))
 
-		_, err := w.SSH(sshCmd)
+		_, err := w.SSH("", sshCmd)
 		assert.Error(t, err)
 	})
 }
