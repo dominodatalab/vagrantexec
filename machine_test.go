@@ -54,3 +54,28 @@ func TestToMachineState(t *testing.T) {
 		assert.Equalf(t, tc.state, state, "expected %s, got %s", tc.state, state)
 	}
 }
+
+func TestMachineStatusIsRunning(t *testing.T) {
+	testcases := []struct {
+		state    MachineState
+		expected bool
+	}{
+		{Unknown, false},
+		{Aborted, false},
+		{GuruMeditation, false},
+		{Inaccessible, false},
+		{NotCreated, false},
+		{Paused, false},
+		{PowerOff, false},
+		{Stopping, false},
+		{Running, true},
+		{Saving, false},
+		{Saved, false},
+		{Stuck, false},
+	}
+
+	for _, tc := range testcases {
+		ms := MachineStatus{State: tc.state}
+		assert.Equal(t, tc.expected, ms.IsRunning())
+	}
+}

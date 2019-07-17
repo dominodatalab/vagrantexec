@@ -61,14 +61,14 @@ var (
 // A list of all available states can be found here: https://github.com/hashicorp/vagrant/blob/4ce8d84f7e6709e4478612a9f0810dc686076ee0/templates/locales/en.yml#L2056
 type MachineState int
 
-// String returns a string representation of the MachineState.
-func (s MachineState) String() string {
-	return stateStrList[s]
-}
-
 // ToMachineState converts a string into a MachineState. An Unknown state is returned if the string is invalid.
 func ToMachineState(str string) MachineState {
 	return strStateMap[str]
+}
+
+// String returns a string representation of the MachineState.
+func (s MachineState) String() string {
+	return stateStrList[s]
 }
 
 // MachineStatus encompasses the machine metadata provided by Vagrant.
@@ -76,6 +76,11 @@ type MachineStatus struct {
 	Name     string
 	Provider string
 	State    MachineState
+}
+
+// IsRunning returns true if the virtual machine is in a running state.
+func (m MachineStatus) IsRunning() bool {
+	return m.State == Running
 }
 
 // machineOutputEntry defines all of the components in a single line of machine-readable output.
