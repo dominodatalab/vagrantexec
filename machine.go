@@ -54,6 +54,16 @@ var (
 		"inaccessible":   Inaccessible,
 		"gurumeditation": GuruMeditation,
 	}
+
+	// runnableStates contains a list of recoverable vagrant states.
+	runnableStates = []MachineState{
+		Running,
+		NotCreated,
+		Saved,
+		PowerOff,
+		Aborted,
+		GuruMeditation,
+	}
 )
 
 // MachineState denotes the state of a machine Vagrant is managing.
@@ -81,6 +91,16 @@ type MachineStatus struct {
 // IsRunning returns true if the virtual machine is in a running state.
 func (m MachineStatus) IsRunning() bool {
 	return m.State == Running
+}
+
+// IsRunnable returns true if the virtual machine will not error during Vagrant.Up().
+func (m MachineStatus) IsRunnable() (runnable bool) {
+	for _, state := range runnableStates {
+		if m.State == state {
+			runnable = true
+		}
+	}
+	return
 }
 
 // machineOutputEntry defines all of the components in a single line of machine-readable output.
