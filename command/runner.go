@@ -3,7 +3,6 @@ package command
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 )
 
@@ -32,11 +31,9 @@ func (r ShellRunner) Execute(cmd string, args ...string) ([]byte, error) {
 	err := c.Run()
 
 	if err != nil {
-		ee, ok := err.(*exec.ExitError)
-		if !ok {
-			panic(fmt.Sprintf("unexpected error: %v", err))
+		if ee, ok := err.(*exec.ExitError); ok {
+			err = newExitError(cmd, ee.ExitCode(), string(stderr.Bytes()))
 		}
-		err = newExitError(cmd, ee.ExitCode(), string(stderr.Bytes()))
 	}
 
 	return stdout.Bytes(), err

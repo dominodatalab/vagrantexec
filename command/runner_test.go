@@ -1,6 +1,7 @@
 package command
 
 import (
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,7 @@ func TestExecute(t *testing.T) {
 		assert.Equal(t, "/usr\n", string(out))
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("exit_error", func(t *testing.T) {
 		sr := ShellRunner{}
 		_, err := sr.Execute("sh", "-c", "echo 'actual err msg' >&2 && exit 64")
 		require.IsType(t, ExitError{}, err)
@@ -36,6 +37,9 @@ func TestExecute(t *testing.T) {
 
 	t.Run("not_executable", func(t *testing.T) {
 		sr := ShellRunner{}
-		assert.Panics(t, func() { sr.Execute("garbage") })
+		_, err := sr.Execute("garbage")
+
+		require.Error(t, err)
+		assert.IsType(t, new(exec.Error), err)
 	})
 }
