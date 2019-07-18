@@ -296,3 +296,55 @@ func TestPluginInstall(t *testing.T) {
 		assert.NoError(t, wrapper.PluginInstall(plugin))
 	})
 }
+
+func TestIsPluginInstalled(t *testing.T) {
+	mockPluginList := mockedWrapperFn([]string{"plugin", "list", "--machine-readable"})
+	w := mockPluginList(ioutil.ReadFile("testdata/plugin-list"))
+
+	testcases := []struct {
+		name     string
+		plugin   Plugin
+		expected bool
+	}{
+		{
+			"no_version",
+			Plugin{Name: "vagrant-ip-show"},
+			true,
+		},
+		{
+			"with_version",
+			Plugin{Name: "vagrant-ip-show", Version: "0.0.4"},
+			true,
+		},
+		{
+			"wrong_version",
+			Plugin{Name: "vagrant-ip-show", Version: "1.5"},
+			false,
+		},
+		{
+			"not_installed",
+			Plugin{Name: "other-plugin"},
+			false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := w.IsPluginInstalled(tc.plugin)
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+
+	t.Run("no_name", func(t *testing.T) {
+		_, err := w.IsPluginInstalled(Plugin{})
+		assert.Error(t, err)
+	})
+
+	t.Run("list_error", func(t *testing.T) {
+		w := mockPluginList(nil, errors.New("runner error"))
+
+		_, err := w.IsPluginInstalled(Plugin{Name: "doesnt-matter"})
+		assert.Error(t, err)
+	})
+}

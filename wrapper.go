@@ -18,12 +18,15 @@ type Vagrant interface {
 	Up() error
 	Halt() error
 	Destroy() error
-	Status() ([]MachineStatus, error)
+	Status() (statusList []MachineStatus, err error)
 	Version() (string, error)
-	SSH(string, string) (string, error)
+	SSH(nameOrID, command string) (cmdOutput string, err error)
+	PluginList() (plugins []Plugin, err error)
+	PluginInstall(plugin Plugin) error
 
-	PluginList() ([]Plugin, error)
-	PluginInstall(Plugin) error
+	// helper functions
+
+	IsPluginInstalled(plugin Plugin) (installed bool, err error)
 }
 
 // Plugin encapsulates Vagrant plugin metadata.
@@ -194,6 +197,32 @@ func (w wrapper) PluginInstall(plugin Plugin) error {
 
 	w.logger.Infof("Installing vagrant plugin: %s", plugin.Name)
 	return w.execLogOutput(cmdArgs...)
+}
+
+// IsPluginInstalled checks if a plugin has already been installed. It will return an error if the plugin arg has no
+// name or the underlying list operation fails.
+func (w wrapper) IsPluginInstalled(plugin Plugin) (installed bool, err error) {
+	if len(plugin.Name) == 0 {
+		err = errors.New("plugin must have a Name")
+		return
+	}
+
+	installedPlugins, err := w.PluginList()
+	if err != nil {
+		return
+	}
+
+	for _, p := range installedPlugins {
+		if p.Name == plugin.Name {
+			if len(plugin.Version) > 0 && p.Version != plugin.Version {
+				break // version mismatch
+			}
+
+			installed = true
+			break
+		}
+	}
+	return
 }
 
 // exec dispatches vagrant commands via the shell runner.
